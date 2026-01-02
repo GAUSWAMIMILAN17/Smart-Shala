@@ -4,6 +4,7 @@ dotenv.config()
 
 import express from "express"
 import authRoute from "./routes/admin.routes.js"
+import teacherRoute from "./routes/teacher.routes.js"
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoute)
+app.use("/api/auth/teacher", teacherRoute)
 
 
 app.listen(5000, () => {

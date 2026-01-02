@@ -10,6 +10,7 @@ import {
   adminDashboard,
   bulkRegisterStudent,
   bulkRegisterTeacher,
+  assignTeacherToSubject,
 } from "../controller/admin.controller.js";
 import { authentication } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
@@ -67,6 +68,13 @@ router.post(
   authorize("ADMIN"),
   upload.single("file"),
   bulkRegisterTeacher
+);
+
+router.post(
+  "/admin/asign-teacher-to-subject",
+  authentication,
+  authorize("ADMIN"),
+  assignTeacherToSubject
 );
 
 export default router;
