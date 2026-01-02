@@ -99,6 +99,54 @@ export const addQuestion = async (req, res) => {
   }
 };
 
+//delete quetion
+export const deleteQuetion = async (req, res) => {
+  try {
+    const { id, quetionId } = req.params;
+    const test = await Test.findById(id);
+
+    if (!test) {
+      return res.status(404).json({
+        success: false,
+        message: "Test not Found",
+      });
+    }
+
+    if (test.status !== "draft") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete question from published or ended test",
+      });
+    }
+
+    const questionExists = test.questions.id(quetionId);
+    if (!questionExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Question not found",
+      });
+    }
+    const updatedTest = await Test.findByIdAndUpdate(id, {
+      $pull: {
+        questions: { _id: quetionId },
+      },
+      
+    }, {new: true});
+
+    return res.status(201).json({
+      success: true,
+      updatedTest,
+      message: "Quetion Deleted"
+    })
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 //addModelAnswer
 export const addModelAnswer = async (req, res) => {
   try {
@@ -230,11 +278,11 @@ export const updateTestStatus = async (req, res) => {
   }
 };
 
-//get teachertest
+//get one test teachertest
 export const getTestForTeacher = async (req, res) => {
   try {
     const teacherId = req.user.id;
-    const {id} = req.params;
+    const { id } = req.params;
     // console.log(id);
     // console.log(teacherId)
     const test = await Test.findById(id)
@@ -264,25 +312,25 @@ export const getTestForTeacher = async (req, res) => {
 
 //update test
 export const updateTest = async (req, res) => {
-    try {
-      const {id} = req.params
-      const teacherId = req.user.id
-      const {title,totalMarks} = req.body
-      // console.log(id)
-      const test = await Test.findById(id)
+  try {
+    const { id } = req.params;
+    const teacherId = req.user.id;
+    const { title, totalMarks } = req.body;
+    // console.log(id)
+    const test = await Test.findById(id);
 
-      if(!test){
-        return res.status(404).json({
-          success: false,
-          message: "Test not found"
-        })
-      }
-      // console.log(test)
-
-      if (test.status !== "draft") {
+    if (!test) {
       return res.status(404).json({
         success: false,
-        message: "Only DRAFT tests can be edited"
+        message: "Test not found",
+      });
+    }
+    // console.log(test)
+
+    if (test.status !== "draft") {
+      return res.status(404).json({
+        success: false,
+        message: "Only DRAFT tests can be edited",
       });
     }
 
@@ -294,39 +342,36 @@ export const updateTest = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Test updated successfully",
-      test
+      test,
     });
-
-
-    } catch (error){
-    console.log(error)
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
-      message: "Server Error"
-    })
+      message: "Server Error",
+    });
   }
-}
+};
 
 //delete Test
 export const deleteTest = async (req, res) => {
   try {
-
-    const {id} = req.params;
+    const { id } = req.params;
     const teacherId = req.user.id;
 
-    const test = await Test.findById(id)
+    const test = await Test.findById(id);
 
-    if(!test) {
+    if (!test) {
       return res.status(404).json({
         success: false,
-        message: "Test not found"
-      })
+        message: "Test not found",
+      });
     }
 
-     if (test.status !== "draft") {
+    if (test.status !== "draft") {
       return res.status(400).json({
         success: false,
-        message: "Only DRAFT tests can be deleted"
+        message: "Only DRAFT tests can be deleted",
       });
     }
 
@@ -335,42 +380,39 @@ export const deleteTest = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Test deleted successfully"
+      message: "Test deleted successfully",
     });
-
-  } catch (error){
-    console.log(error)
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
-      message: "Server Error"
-    })
+      message: "Server Error",
+    });
   }
-}
+};
 
 //get all Test
 export const getAllTest = async (req, res) => {
   try {
-
     const getAllTest = await Test.find();
 
-    if(!getAllTest){
+    if (!getAllTest) {
       return res.status(404).json({
         success: false,
-        message: "Test not created"
-      })
+        message: "Test not created",
+      });
     }
 
     return res.status(201).json({
       success: true,
       getAllTest,
-      message: "All Test Occur"
-    })
-
-  } catch (error){
-    console.log(error)
+      message: "All Test Occur",
+    });
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
-      message: "Server Error"
-    })
+      message: "Server Error",
+    });
   }
-}
+};

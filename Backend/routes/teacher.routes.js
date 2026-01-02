@@ -4,6 +4,7 @@ import {
   addModelAnswer,
   addQuestion,
   createTest,
+  deleteQuetion,
   deleteTest,
   getAllTest,
   getTestForTeacher,
@@ -21,6 +22,12 @@ router.post(
   authentication,
   authorize("TEACHER"),
   addQuestion
+);
+router.delete(
+  "/test/:id/question/:quetionId",
+  authentication,
+  authorize("TEACHER"),
+  deleteQuetion
 );
 router.post(
   "/create-test/:id/add-question/:questionId",
