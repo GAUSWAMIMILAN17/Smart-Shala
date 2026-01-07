@@ -4,7 +4,7 @@ export const authorize = (...allowedRoles) => {
     if (!allowedRoles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: "Access denied ! Only Admin This Action Perform",
+        message: `Access denied ! Only ${allowedRoles} This Action Perform`,
       });
     }
 
