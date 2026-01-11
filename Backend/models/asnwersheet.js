@@ -6,19 +6,26 @@ const studentAnswerSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  test:{
+  test: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Test",
     required: true
   },
   answers: [
     {
-      questionId: mongoose.Schema.Types.ObjectId,
-      answerText: String,
-    },
+      questionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+      },
+      answerText: String
+    }
   ],
-  submittedAt: Date,
+  submittedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
+
 
 export const StudentAnswer = mongoose.model(
   "StudentAnswer",

@@ -1,7 +1,11 @@
+import { StudentAnswer } from "../models/asnwersheet.js";
 import { Classroom } from "../models/classroom.js";
+import { Evaluation } from "../models/evolutionSchema.js";
 import { Subject } from "../models/subject.js";
 import { Test } from "../models/test.js";
 import { User } from "../models/user.js";
+
+
 
 //test create
 export const createTest = async (req, res) => {
@@ -126,18 +130,21 @@ export const deleteQuetion = async (req, res) => {
         message: "Question not found",
       });
     }
-    const updatedTest = await Test.findByIdAndUpdate(id, {
-      $pull: {
-        questions: { _id: quetionId },
+    const updatedTest = await Test.findByIdAndUpdate(
+      id,
+      {
+        $pull: {
+          questions: { _id: quetionId },
+        },
       },
-      
-    }, {new: true});
+      { new: true }
+    );
 
     return res.status(201).json({
       success: true,
       updatedTest,
-      message: "Quetion Deleted"
-    })
+      message: "Quetion Deleted",
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -416,3 +423,58 @@ export const getAllTest = async (req, res) => {
     });
   }
 };
+
+//getsAll submission
+export const allSubmission = async (req, res) => {
+  try {
+    const allTestSubmission = await StudentAnswer.find()
+      .populate("student", "name email role")
+      .populate("test", "title");
+    // console.log(allTestSubmission);
+
+    return res.status(200).json({
+      success: true,
+      allTestSubmission,
+      message: "All submission received",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+  F;
+};
+
+//get one submision
+export const viewSubmission = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const submission = await StudentAnswer.findById(id).populate(
+      "student",
+      "name email"
+    );
+    if (!submission) {
+      return res.status(404).json({
+        success: false,
+        message: "not any test submited",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      submission,
+      message: "Submission Access",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+  F;
+};
+

@@ -173,7 +173,7 @@ export const answerSubmit = async (req, res) => {
   try {
     const studentId = req.user.id;
     const {testId} = req.params;
-    const answers = req.body;
+    const {answers} = req.body;
     // console.log(studentId);
     // console.log(testId);
     // console.log(answers)
@@ -203,7 +203,7 @@ export const answerSubmit = async (req, res) => {
 
     // 3️⃣ Prevent multiple submissions
     const alreadySubmitted = await StudentAnswer.findOne({
-      student: studentProfile._id,
+      student: studentId,
       test: testId
     });
 

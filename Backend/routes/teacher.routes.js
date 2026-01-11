@@ -3,6 +3,8 @@ import { authentication } from "../middleware/auth.middleware.js";
 import {
   addModelAnswer,
   addQuestion,
+  aiEvaluateSubmission,
+  allSubmission,
   createTest,
   deleteQuetion,
   deleteTest,
@@ -11,6 +13,7 @@ import {
   teacherDashboard,
   updateTest,
   updateTestStatus,
+  viewSubmission,
 } from "../controller/teaacher.controller.js";
 import { authorize } from "../middleware/role.middleware.js";
 
@@ -62,5 +65,8 @@ router.delete(
   authorize("TEACHER"),
   deleteTest
 );
+
+router.get("/allSubmission", authentication, authorize("TEACHER"), allSubmission);
+router.get("/submission/:id", authentication, authorize("TEACHER"), viewSubmission);
 
 export default router;
