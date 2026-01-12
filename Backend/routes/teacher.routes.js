@@ -3,7 +3,7 @@ import { authentication } from "../middleware/auth.middleware.js";
 import {
   addModelAnswer,
   addQuestion,
-  aiEvaluateSubmission,
+  aiSuggestion,
   allSubmission,
   createTest,
   deleteQuetion,
@@ -68,5 +68,6 @@ router.delete(
 
 router.get("/allSubmission", authentication, authorize("TEACHER"), allSubmission);
 router.get("/submission/:id", authentication, authorize("TEACHER"), viewSubmission);
+router.post("/ai/suggestion", authentication, authorize("TEACHER"), aiSuggestion);
 
 export default router;

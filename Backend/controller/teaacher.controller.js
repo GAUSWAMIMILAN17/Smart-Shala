@@ -1,9 +1,9 @@
 import { StudentAnswer } from "../models/asnwersheet.js";
 import { Classroom } from "../models/classroom.js";
-import { Evaluation } from "../models/evolutionSchema.js";
 import { Subject } from "../models/subject.js";
 import { Test } from "../models/test.js";
 import { User } from "../models/user.js";
+import { evaluateAnswerAI } from "../services/ai.service.js";
 
 
 
@@ -477,4 +477,71 @@ export const viewSubmission = async (req, res) => {
   }
   F;
 };
+
+//ai sugestion
+export const aiSuggestion = async (req, res) => {
+  try{
+    
+    const {testId, studentId ,getIndex} = req.body
+
+    const test = await Test.findById(testId)
+    if(!test) {
+      return res.status(404).json({
+        success: false,
+        message: "Test not found"
+      })
+    }
+    const studentDoc = await StudentAnswer.findOne({
+      test: testId,
+      student: studentId
+    })
+    if(!studentDoc){
+      return res.status(404).json({
+        success: false,
+        message: "Student not attemp this test"
+      })
+    }
+    // console.log(test)
+
+    const question = test.questions[getIndex];
+
+    if (!question) {
+      return res.status(404).json({
+        success: false,
+        message: "Question not found"
+      })
+    }
+
+    const questionText = question.questionText
+    const modelAnswer = question.modelAnswer.answerText;
+    const studentAnswer = studentDoc.answers[getIndex].answerText
+
+    // console.log(questionText)
+    // console.log(modelAnswer)
+    // console.log(studentAnswer)
+
+    const aiResult = await evaluateAnswerAI({
+      question: questionText,
+      modelAnswer: modelAnswer,
+      studentAnswer,
+      maxMarks: question.marks
+    }); 
+    console.log(aiResult)
+
+    return res.status(200).json({
+      success: true,
+      questionText,
+      modelAnswer,
+      studentAnswer,
+      message: "model and student answer recevied"
+    })
+
+  }catch (error){
+    console.log(error)
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    })
+  }
+}
 
