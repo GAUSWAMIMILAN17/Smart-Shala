@@ -1,5 +1,6 @@
 import { StudentAnswer } from "../models/asnwersheet.js";
 import { Classroom } from "../models/classroom.js";
+import { Result } from "../models/result.js";
 import { StudentProfile } from "../models/studentProfile.js";
 import { Test } from "../models/test.js";
 import { User } from "../models/user.js";
@@ -286,3 +287,38 @@ export const viewSubmission = async (req, res) => {
     })
   }F
 }
+
+//view result
+export const getStudentResult = async (req, res) => {
+  try {
+    const studentId = req.user.id;   // logged-in student
+    const { testId } = req.params;
+
+    const result = await Result.findOne({
+      test: testId,
+      student: studentId,
+      published: true
+    })
+      .populate("test", "title totalMarks")
+      .populate("classroom", "name");
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Result not published yet"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      result
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};

@@ -3,13 +3,16 @@ import { authentication } from "../middleware/auth.middleware.js";
 import {
   addModelAnswer,
   addQuestion,
-  aiSuggestion,
+  
   allSubmission,
   createTest,
+  creatResult,
   deleteQuetion,
   deleteTest,
   getAllTest,
   getTestForTeacher,
+  recheckResult,
+  resultPublish,
   teacherDashboard,
   updateTest,
   updateTestStatus,
@@ -68,6 +71,10 @@ router.delete(
 
 router.get("/allSubmission", authentication, authorize("TEACHER"), allSubmission);
 router.get("/submission/:id", authentication, authorize("TEACHER"), viewSubmission);
-router.post("/ai/suggestion", authentication, authorize("TEACHER"), aiSuggestion);
+// router.post("/ai/suggestion", authentication, authorize("TEACHER"), aiSuggestion);
+
+router.post("/result/:testId/:studentId", authentication, authorize("TEACHER"), creatResult);
+router.get("/result-publish/:testId", authentication, authorize("TEACHER"), resultPublish)
+router.post("/recheck-result/:testId/:studentId", authentication, authorize("TEACHER"), recheckResult);
 
 export default router;

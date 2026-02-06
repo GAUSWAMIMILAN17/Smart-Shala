@@ -17,7 +17,8 @@ const studentAnswerSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
       },
-      answerText: String
+      answerText: String,
+      marks: Number
     }
   ],
   submittedAt: {

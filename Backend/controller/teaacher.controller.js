@@ -1,11 +1,10 @@
 import { StudentAnswer } from "../models/asnwersheet.js";
 import { Classroom } from "../models/classroom.js";
+import { Result } from "../models/result.js";
 import { Subject } from "../models/subject.js";
 import { Test } from "../models/test.js";
 import { User } from "../models/user.js";
 import { evaluateAnswerAI } from "../services/ai.service.js";
-
-
 
 //test create
 export const createTest = async (req, res) => {
@@ -137,7 +136,7 @@ export const deleteQuetion = async (req, res) => {
           questions: { _id: quetionId },
         },
       },
-      { new: true }
+      { new: true },
     );
 
     return res.status(201).json({
@@ -206,7 +205,7 @@ export const teacherDashboard = async (req, res) => {
     const teacherInfo = await User.findById(id);
     console.log(teacherInfo);
     const subject = await Subject.findOne({ teacher: id }).populate(
-      "classroom"
+      "classroom",
     );
     console.log(subject);
     if (!id) {
@@ -256,14 +255,14 @@ export const updateTestStatus = async (req, res) => {
     // console.log(test);
     const { status } = req.body;
 
-    if (test.status === "published" && test.status !== "draft") {
+    if (test.status === "published" && status === "draft") {
       return res.status(404).json({
         success: false,
         message: "After Published not Backtrack Posible",
       });
     }
 
-    if (test.status === "ended" && test.status !== "published") {
+    if (test.status === "ended" && status !== "ended") {
       return res.status(404).json({
         success: false,
         message: "After Ended not Backtrack Posible",
@@ -454,7 +453,7 @@ export const viewSubmission = async (req, res) => {
 
     const submission = await StudentAnswer.findById(id).populate(
       "student",
-      "name email"
+      "name email",
     );
     if (!submission) {
       return res.status(404).json({
@@ -478,70 +477,269 @@ export const viewSubmission = async (req, res) => {
   F;
 };
 
-//ai sugestion
-export const aiSuggestion = async (req, res) => {
-  try{
-    
-    const {testId, studentId ,getIndex} = req.body
+// //ai sugestion
+// export const aiSuggestion = async (req, res) => {
+//   try{
 
-    const test = await Test.findById(testId)
-    if(!test) {
+//     const {testId, studentId ,getIndex} = req.body
+
+//     const test = await Test.findById(testId)
+//     if(!test) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Test not found"
+//       })
+//     }
+//     const studentDoc = await StudentAnswer.findOne({
+//       test: testId,
+//       student: studentId
+//     })
+//     if(!studentDoc){
+//       return res.status(404).json({
+//         success: false,
+//         message: "Student not attemp this test"
+//       })
+//     }
+//     // console.log(test)
+
+//     const question = test.questions[getIndex];
+
+//     if (!question) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Question not found"
+//       })
+//     }
+
+//     const questionText = question.questionText
+//     const modelAnswer = question.modelAnswer.answerText;
+//     const studentAnswer = studentDoc.answers[getIndex].answerText
+
+//     // console.log(questionText)
+//     // console.log(modelAnswer)
+//     // console.log(studentAnswer)
+
+//     const aiResult = await evaluateAnswerAI({
+//       question: questionText,
+//       modelAnswer: modelAnswer,
+//       studentAnswer,
+//       maxMarks: question.marks
+//     });
+//     console.log(aiResult)
+
+//     return res.status(200).json({
+//       success: true,
+//       questionText,
+//       modelAnswer,
+//       studentAnswer,
+//       message: "model and student answer recevied"
+//     })
+
+//   }catch (error){
+//     console.log(error)
+//     return res.status(500).json({
+//       success: false,
+//       message: "Server Error"
+//     })
+//   }
+// }
+
+//result creation
+export const creatResult = async (req, res) => {
+  try {
+    const { testId, studentId } = req.params;
+    const teacherId = req.user.id;
+    const { marks } = req.body;
+
+    // console.log(testId)
+    // console.log(teacherId)
+
+    const test = await Test.findById(testId);
+    if (!test) {
       return res.status(404).json({
         success: false,
-        message: "Test not found"
-      })
+        message: "Test not found",
+      });
     }
-    const studentDoc = await StudentAnswer.findOne({
+
+    if (test.status !== "ended") {
+      return res.status(400).json({
+        success: false,
+        message: "Test must be ended before result creation",
+      });
+    }
+
+    const alreadyCreated = await Result.findOne({
       test: testId,
-      student: studentId
-    })
-    if(!studentDoc){
-      return res.status(404).json({
-        success: false,
-        message: "Student not attemp this test"
-      })
-    }
-    // console.log(test)
+      student: studentId,
+    });
 
-    const question = test.questions[getIndex];
-
-    if (!question) {
-      return res.status(404).json({
+    if (alreadyCreated) {
+      return res.status(400).json({
         success: false,
-        message: "Question not found"
-      })
+        message: "Result already created for this student",
+      });
     }
 
-    const questionText = question.questionText
-    const modelAnswer = question.modelAnswer.answerText;
-    const studentAnswer = studentDoc.answers[getIndex].answerText
+    const submission = await StudentAnswer.findOne({
+      test: testId,
+      student: studentId,
+    });
 
-    // console.log(questionText)
-    // console.log(modelAnswer)
-    // console.log(studentAnswer)
+    if (!submission) {
+      return res.status(404).json({
+        success: false,
+        message: "Submission not found",
+      });
+    }
+    let totalMarks = 0;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
 
-    const aiResult = await evaluateAnswerAI({
-      question: questionText,
-      modelAnswer: modelAnswer,
-      studentAnswer,
-      maxMarks: question.marks
-    }); 
-    console.log(aiResult)
+    marks.forEach((item) => {
+      const question = test.questions[item.questionIndex];
+
+      if (!question) return;
+
+      const obtained = Math.min(item.marks, question.marks);
+      submission.answers[item.questionIndex].marks = obtained;
+
+      totalMarks += obtained;
+
+      if (obtained > 0) correctAnswers++;
+      else wrongAnswers++;
+    });
+
+    // await submission.save();
+
+    const result = await Result.create({
+      student: studentId,
+      test: testId,
+      classroom: test.classroom,
+      totalQuestions: test.questions.length,
+      correctAnswers,
+      wrongAnswers,
+      marks: totalMarks,
+      published: false
+    });
+
+    console.log(result);
+    
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+//result publish
+export const resultPublish = async (req, res) => {
+  try {
+    const { testId } = req.params;
+
+    const results = await Result.find({ test: testId });
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No results found for this test"
+      });
+    }
+
+    // 2️⃣ Update all results → published = true
+    await Result.updateMany(
+      { test: testId },
+      { $set: { published: true } }
+    );
 
     return res.status(200).json({
       success: true,
-      questionText,
-      modelAnswer,
-      studentAnswer,
-      message: "model and student answer recevied"
-    })
+      message: "All results published successfully"
+    });
 
-  }catch (error){
-    console.log(error)
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: "Server Error"
-    })
+    });
   }
-}
+};
+
+//recheck-result
+export const recheckResult = async (req, res) => {
+  try {
+    const { testId, studentId } = req.params;
+    const { marks } = req.body;
+
+    // 1️⃣ Find existing result (must be published)
+    const result = await Result.findOne({
+      test: testId,
+      student: studentId
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Result not found"
+      });
+    }
+
+    // 2️⃣ Fetch test & submission
+    const test = await Test.findById(testId);
+    const submission = await StudentAnswer.findOne({
+      test: testId,
+      student: studentId
+    });
+
+    if (!test || !submission) {
+      return res.status(404).json({
+        success: false,
+        message: "Test or submission not found"
+      });
+    }
+
+    let totalMarks = 0;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+
+    // 3️⃣ Update marks question-wise
+    marks.forEach(item => {
+      const question = test.questions[item.questionIndex];
+      if (!question) return;
+
+      const obtained = Math.min(item.marks, question.marks);
+      submission.answers[item.questionIndex].marks = obtained;
+
+      totalMarks += obtained;
+      if (obtained > 0) correctAnswers++;
+      else wrongAnswers++;
+    });
+
+    // 4️⃣ Save updated answers
+    await submission.save();
+
+    // 5️⃣ Update Result (IMPORTANT: published untouched)
+    result.correctAnswers = correctAnswers;
+    result.wrongAnswers = wrongAnswers;
+    result.marks = totalMarks;
+
+    await result.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Result rechecked and updated successfully",
+      result
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
 

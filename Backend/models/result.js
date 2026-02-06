@@ -20,16 +20,7 @@ const resultSchema = new mongoose.Schema({
   correctAnswers: Number,
   wrongAnswers: Number,
   marks: Number,
-//   percentage: Number,
-  status: {
-    type: String,
-    enum: ["pass", "fail"]
-  },
-  checkedBy: {
-    type: String,
-    enum: ["AI", "Teacher"],
-    default: "AI"
-  },
+  
   published: {
     type: Boolean,
     default: false
