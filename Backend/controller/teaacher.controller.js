@@ -474,7 +474,6 @@ export const viewSubmission = async (req, res) => {
       message: "Server Error",
     });
   }
-  F;
 };
 
 // //ai sugestion
