@@ -11,12 +11,16 @@ import {
   bulkRegisterStudent,
   bulkRegisterTeacher,
   assignTeacherToSubject,
+  deleteTeacher,
+  deleteClass,
 } from "../controller/admin.controller.js";
 import { authentication } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
 import upload from "../middleware/multer.js";
 
 const router = express.Router();
+
+// console.log("✅ ADMIN ROUTES LOADED");
 
 router.post("/register", register);
 router.post("/login", login);
@@ -28,6 +32,14 @@ router.post(
   authorize("ADMIN"),
   adminAddClassroom
 );
+
+router.delete(
+  "/admin/classroom/:id",
+  authentication,
+  authorize("ADMIN"),
+  deleteClass
+);
+
 router.post(
   "/admin/subject",
   authentication,
@@ -46,6 +58,13 @@ router.post(
   authentication,
   authorize("ADMIN"),
   registerTeacher
+);
+
+router.delete(
+  "/admin/deleteTeacher/:teacherId",
+  authentication,
+  authorize("ADMIN"),
+  deleteTeacher
 );
 router.get(
   "/admin/dashboard",

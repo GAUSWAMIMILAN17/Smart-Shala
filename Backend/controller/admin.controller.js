@@ -65,7 +65,7 @@ export const login = async (req, res) => {
     const { email, password, role } = req.body;
 
     if (!email || !password || !role) {
-      return res.status(404).json({
+      return res.status(400).json({
         success: false,
         message: "Missing field required",
       });
@@ -74,13 +74,13 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
         message: "User does not Exist",
       });
     }
     if (role != user.role) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
         message: "Role is Wrong",
       });
@@ -89,7 +89,7 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
         message: "Incorrect Password",
       });
@@ -107,6 +107,14 @@ export const login = async (req, res) => {
     );
     // console.log(token)
 
+    const userData = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+    // console.log(userData);
+
     return res
       .status(201)
       .cookie("token", token, {
@@ -117,6 +125,7 @@ export const login = async (req, res) => {
       })
       .json({
         success: true,
+        userData,
         message: "User Login Successfully",
       });
   } catch (error) {
@@ -279,7 +288,7 @@ export const registerTeacher = async (req, res) => {
 
     const existTeacher = await User.findOne({ email });
     if (existTeacher) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
         message: "Teacher already exist",
       });
@@ -386,14 +395,18 @@ export const adminDashboard = async (req, res) => {
     const teacherList = await User.find({
       role: "TEACHER",
     });
-
-    res.json({
+    const dashboardData = {
       totalClasses,
       totalTeachers,
       totalStudents,
       classList,
       studentList,
       teacherList,
+    };
+    return res.status(201).json({
+      success: true,
+      message: "Dashboard Data Fetched",
+      dashboardData
     });
   } catch (error) {
     console.log(error);
@@ -497,7 +510,7 @@ export const bulkRegisterTeacher = async (req, res) => {
     const rows = XLSX.utils.sheet_to_json(sheet);
 
     for (let row of rows) {
-      const { name, email, password, role } = row;
+      const { name, email, password } = row;
 
       if (!email || !password || !name) {
         failedRecords.push({
@@ -534,6 +547,54 @@ export const bulkRegisterTeacher = async (req, res) => {
       successCount: successRecords.length,
       failedCount: failedRecords.length,
       failedRecords,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const deleteTeacher = async (req, res) => {
+  try {
+    const { teacherId } = req.params;
+    const teacher = await User.findById(teacherId);
+    if (!teacher || teacher.role !== "TEACHER") {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher not found",
+      });
+    } 
+    await User.findByIdAndDelete(teacherId);
+    return res.status(200).json({
+      success: true,
+      message: "Teacher deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const deleteClass = async (req, res) => {
+  try {
+    const { id } = req.params; 
+    const classroom = await Classroom.findById(id);
+    if (!classroom) {
+      return res.status(404).json({
+        success: false,
+        message: "Classroom not found",
+      });
+    }
+    await Classroom.findByIdAndDelete(id);
+    return res.status(200).json({
+      success: true,
+      message: "Classroom deleted successfully",
     });
   } catch (error) {
     console.log(error);

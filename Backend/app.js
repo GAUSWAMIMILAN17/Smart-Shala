@@ -7,16 +7,24 @@ import authRoute from "./routes/admin.routes.js"
 import teacherRoute from "./routes/teacher.routes.js"
 import studentRoute from "./routes/student.routes.js"
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const app = express();
 
-// middleware
-app.use(express.json())
-app.use(cookieParser());
 
 // db connect
 connectDB();
 
+const corsOptions = {
+  origin: "http://localhost:3000", // Replace with your frontend URL
+  credentials: true, // Allow cookies to be sent
+};
+
+// middleware
+
+app.use(cors(corsOptions));
+app.use(express.json())
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Smart Shala Backend Running");
