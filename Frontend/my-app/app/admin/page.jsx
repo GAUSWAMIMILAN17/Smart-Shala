@@ -6,15 +6,17 @@ import { USER_API_ENDPOINT } from "../../utils/data";
 import axios from "axios";
 import { setDashboardData } from "../../redux/slices/adminSlice";
 import Link from "next/link";
+import { setLoading } from "../../redux/slices/authSlice";
 
 export default function AdminDashboard() {
-  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { dashboardData } = useSelector((state) => state.admin);
+  const { user, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchDashboardData = async (e) => {
       try {
+        dispatch(setLoading(true));
         const res = await axios.get(`${USER_API_ENDPOINT}/admin/dashboard`, {
           withCredentials: true,
         });
@@ -22,10 +24,12 @@ export default function AdminDashboard() {
 
         if (res.data.success) {
           dispatch(setDashboardData(res.data.dashboardData));
+          dispatch(setLoading(false));
           // console.log(dashboardData);
         }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+        dispatch(setLoading(false));
       }
     };
     fetchDashboardData();
@@ -91,10 +95,17 @@ export default function AdminDashboard() {
 /* Reusable Components */
 
 function StatCard({ title, value }) {
+    const { user, loading } = useSelector((state) => state.auth);
   return (
     <div className="bg-white rounded-xl shadow p-6">
       <p className="text-gray-500 text-sm mb-2">{title}</p>
-      <h2 className="text-3xl font-bold text-indigo-600">{value}</h2>
+      {
+        loading ? (
+          <p className="text-2xl font-bold text-gray-800 animate-pulse">Loading...</p>
+        ) : (
+          <h2 className="text-3xl font-bold text-indigo-600">{value}</h2>
+        )
+      }
     </div>
   );
 }

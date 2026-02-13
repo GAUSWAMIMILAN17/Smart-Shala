@@ -1,14 +1,17 @@
 "use client";
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { use, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { USER_API_ENDPOINT } from "../../../utils/data.js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { setDashboardData } from "../../../redux/slices/adminSlice.js";
+
 
 export default function ClassPage() {
   const { dashboardData } = useSelector((state) => state.admin);
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const classes = dashboardData?.classList;
 
@@ -53,7 +56,7 @@ export default function ClassPage() {
                 Class Name
               </th>
               <th className="px-6 py-3 text-sm font-semibold text-gray-600">
-                Student
+                ClassId
               </th>
 
               <th className="px-6 py-3 text-sm font-semibold text-gray-600">
@@ -75,7 +78,7 @@ export default function ClassPage() {
                   {cls.name}
                 </td>
 
-                <td className="px-6 py-4 text-gray-600">{cls.totalStudents}</td>
+                <td className="px-6 py-4 text-gray-600">{cls._id}</td>
                 <td className="px-6 py-4">
                   <Link href={`/admin/class/${cls._id}`} className="text-sm text-indigo-600 hover:underline">
                     <button className="text-sm text-indigo-600 hover:underline">

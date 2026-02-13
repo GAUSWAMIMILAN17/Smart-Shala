@@ -604,3 +604,57 @@ export const deleteClass = async (req, res) => {
     });
   }
 };
+
+export const deleteStudent = async (req, res) => { 
+  try {
+    const { studentId } = req.params;
+    const student = await User.findById(studentId);
+    if (!student || student.role !== "STUDENT") {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+    await User.findByIdAndDelete(studentId);
+    return res.status(200).json({
+      success: true,
+      message: "Student deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+}
+
+export const classStudents = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    // console.log(classId)
+    const allStudents = await StudentProfile.find();
+// console.log("All Students:", allStudents);
+
+    const students = await StudentProfile.find({ classroomId: classId });
+    console.log(students);
+    if(!students) {
+      return res.status(404).json({
+        success: false,
+        message: "No students found for this class",
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: "Students fetched successfully",
+      students,
+    });
+  } catch (error) { 
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  } 
+}

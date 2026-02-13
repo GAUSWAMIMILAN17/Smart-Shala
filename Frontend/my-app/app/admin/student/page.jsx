@@ -1,36 +1,75 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { USER_API_ENDPOINT } from "../../../utils/data";
 
 export default function StudentPage() {
-  const [students, setStudents] = useState([]);
+  const { dashboardData } = useSelector((state) => state.admin);
+  const students = dashboardData.studentList;
+  const router = useRouter();
 
-  // 🔹 Sample data load
-  useEffect(() => {
-    setStudents([
-      {
-        _id: "stu1",
-        name: "Rahul Sharma",
-        email: "rahul@gmail.com",
-      },
-      {
-        _id: "stu2",
-        name: "Priya Patel",
-        email: "priya@gmail.com",
-      },
-      {
-        _id: "stu3",
-        name: "Amit Verma",
-        email: "amit@gmail.com",
-      },
-    ]);
-  }, []);
+  const deleteStudent = async (id) => {
+    console.log("Delete student with ID:", id);
+    try {
+      const res = await axios.delete(
+        `${USER_API_ENDPOINT}/admin/deleteStudent/${id}`,
+        {
+          withCredentials: true,
+        },
+      );
+      if (res.data.success) {
+        alert(res.data.message);
+        router.push("/admin/");
+      }
+    } catch (error) {
+      console.log("Error deleting student:", error);
+      alert("Failed to delete student. Please try again.");
+    }
+  };
 
-  // 🔴 Delete student (frontend only)
-  const deleteStudent = (id) => {
-    const filtered = students.filter((stu) => stu._id !== id);
-    setStudents(filtered);
-    alert("Student deleted (sample)");
+  const fileInputRef = useRef(null);
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    console.log("Selected file:", file);
+
+    if (!file) {
+      alert("Please select a file");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post(
+        `${USER_API_ENDPOINT}/admin/bulk-register-student`,
+        formData,
+        {
+          withCredentials: true,
+        },
+      );
+      console.log("Response from server:", res.data);
+      if (res.data.success) {
+        alert(
+          `${res.data.message}. Registered ${res.data.successCount} students. Failed to register ${res.data.failedCount} students.`,
+        );
+        // console.log(
+        //   `${res.data.message}. Registered ${res.data.successCount} students. Failed to register ${res.data.failedCount} students.`,
+        // );
+        router.push("/admin/");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload file. Please try again.");
+    }
   };
 
   return (
@@ -40,15 +79,29 @@ export default function StudentPage() {
         <h1 className="text-3xl font-bold text-gray-800">Students</h1>
 
         <div className="flex gap-3 mt-4 sm:mt-0">
-          <Link href="/admin/students/add">
+          <Link href="/admin/student/add">
             <button className="px-4 py-2 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700">
               + Add Student
             </button>
           </Link>
 
-          <button className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700">
-            Bulk Upload
-          </button>
+          <div>
+            <button
+              onClick={handleButtonClick}
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Upload Excel / Bulk Data (Xcel Sheets Only)
+            </button>
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              type="file"
+              accept=".xlsx,.xls"
+              hidden
+            />
+          </div>
         </div>
       </div>
 
@@ -82,9 +135,7 @@ export default function StudentPage() {
                   {stu.name}
                 </td>
 
-                <td className="px-6 py-4 text-gray-600">
-                  {stu.email}
-                </td>
+                <td className="px-6 py-4 text-gray-600">{stu.email}</td>
 
                 <td className="px-6 py-4">
                   <button className="text-sm text-indigo-600 hover:underline">
@@ -105,10 +156,7 @@ export default function StudentPage() {
 
             {students.length === 0 && (
               <tr>
-                <td
-                  colSpan="4"
-                  className="text-center py-6 text-gray-500"
-                >
+                <td colSpan="4" className="text-center py-6 text-gray-500">
                   No students found
                 </td>
               </tr>

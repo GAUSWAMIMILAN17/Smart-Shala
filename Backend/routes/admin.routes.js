@@ -13,6 +13,8 @@ import {
   assignTeacherToSubject,
   deleteTeacher,
   deleteClass,
+  deleteStudent,
+  classStudents,
 } from "../controller/admin.controller.js";
 import { authentication } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
@@ -53,6 +55,12 @@ router.post(
   authorize("ADMIN"),
   registerStudent
 );
+router.delete(
+  "/admin/deleteStudent/:studentId",
+  authentication,
+  authorize("ADMIN"),
+  deleteStudent);
+
 router.post(
   "/admin/registerTeacher",
   authentication,
@@ -95,5 +103,7 @@ router.post(
   authorize("ADMIN"),
   assignTeacherToSubject
 );
+
+router.get("/admin/class/:classId/students", authentication, authorize("ADMIN"), classStudents);
 
 export default router;

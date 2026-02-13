@@ -1,64 +1,39 @@
 "use client";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useParams } from "next/navigation";
+import axios from "axios";
+import { USER_API_ENDPOINT } from "../../../../utils/data.js";
 
 export default function ClassViewPage() {
-  const [classData, setClassData] = useState(null);
+  
 
-  // 🔹 sample data
-  useEffect(() => {
-    setClassData({
-      _id: "class123",
-      name: "Class 10-A",
-      students: [
-        {
-          _id: "stu1",
-          name: "Rahul Sharma",
-          email: "rahul@gmail.com",
-        },
-        {
-          _id: "stu2",
-          name: "Priya Patel",
-          email: "priya@gmail.com",
-        },
-      ],
-      subjects: [
-        {
-          _id: "sub1",
-          name: "Mathematics",
-        },
-        {
-          _id: "sub2",
-          name: "Science",
-        },
-      ],
-    });
-  }, []);
+  const {classId} = useParams()
+  const {dashboardData} = useSelector((state) => state.admin);
+  const classData = dashboardData?.classList?.find((cls) => cls._id === classId)
 
-  // 🔴 delete student (frontend only)
-  const deleteStudent = (studentId) => {
-    const updatedStudents = classData.students.filter(
-      (stu) => stu._id !== studentId
-    );
-
-    setClassData({
-      ...classData,
-      students: updatedStudents,
-    });
-  };
-
-  // 🔴 delete subject (frontend only)
-  const deleteSubject = (subjectId) => {
-    const updatedSubjects = classData.subjects.filter(
-      (sub) => sub._id !== subjectId
-    );
-
-    setClassData({
-      ...classData,
-      subjects: updatedSubjects,
-    });
-  };
+  console.log("Class Data:", classData);
 
   if (!classData) return <p>Loading...</p>;
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+
+        const res = await axios(`${USER_API_ENDPOINT}/admin/class/${classId}/students`, {
+        withCredentials: true,
+        })
+        if (res.data.success) {
+          console.log("Students in class:", res.data.students);
+        }
+
+      } catch (error) {
+        console.error("Error fetching students:", error);
+      }
+    }
+    fetchStudents();
+  });
+
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -78,7 +53,7 @@ export default function ClassViewPage() {
               <th className="text-left">Action</th>
             </tr>
           </thead>
-          <tbody>
+          {/* <tbody>
             {classData.students.map((stu) => (
               <tr key={stu._id} className="border-b">
                 <td>{stu.name}</td>
@@ -93,7 +68,7 @@ export default function ClassViewPage() {
                 </td>
               </tr>
             ))}
-          </tbody>
+          </tbody> */}
         </table>
       </div>
 
@@ -107,7 +82,7 @@ export default function ClassViewPage() {
         </div>
 
         <ul>
-          {classData.subjects.map((sub) => (
+          {/* {classData.subjects.map((sub) => (
             <li
               key={sub._id}
               className="flex justify-between border-b py-2"
@@ -120,7 +95,7 @@ export default function ClassViewPage() {
                 Delete
               </button>
             </li>
-          ))}
+          ))} */}
         </ul>
       </div>
     </div>
