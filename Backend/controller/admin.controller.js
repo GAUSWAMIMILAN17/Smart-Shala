@@ -609,11 +609,15 @@ export const deleteStudent = async (req, res) => {
   try {
     const { studentId } = req.params;
     const student = await User.findById(studentId);
+    const studentProfile = await StudentProfile.findOne({ userId: studentId });
     if (!student || student.role !== "STUDENT") {
       return res.status(404).json({
         success: false,
         message: "Student not found",
       });
+    }
+    if (studentProfile) {
+      await StudentProfile.findByIdAndDelete(studentProfile._id);
     }
     await User.findByIdAndDelete(studentId);
     return res.status(200).json({
@@ -636,7 +640,7 @@ export const classStudents = async (req, res) => {
     const allStudents = await StudentProfile.find();
 // console.log("All Students:", allStudents);
 
-    const students = await StudentProfile.find({ classroomId: classId });
+    const students = await StudentProfile.find({ classroomId: classId }).populate("userId", "name email");
     console.log(students);
     if(!students) {
       return res.status(404).json({

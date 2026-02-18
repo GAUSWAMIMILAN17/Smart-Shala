@@ -1,16 +1,18 @@
 "use client";
 import { use, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { USER_API_ENDPOINT } from "../../../../utils/data.js";
 
 export default function ClassViewPage() {
   
+  const [students, setStudents] = useState([]);
 
   const {classId} = useParams()
   const {dashboardData} = useSelector((state) => state.admin);
   const classData = dashboardData?.classList?.find((cls) => cls._id === classId)
+  const router = useRouter();
 
   console.log("Class Data:", classData);
 
@@ -24,6 +26,7 @@ export default function ClassViewPage() {
         withCredentials: true,
         })
         if (res.data.success) {
+          setStudents(res.data.students);
           console.log("Students in class:", res.data.students);
         }
 
@@ -32,8 +35,22 @@ export default function ClassViewPage() {
       }
     }
     fetchStudents();
-  });
+  }, [classId]);
 
+  const deleteStudent = async (studentId) => {
+    try {
+      const res = await axios.delete(`${USER_API_ENDPOINT}/admin/deleteStudent/${studentId}`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setStudents((prev) => prev.filter((stu) => stu._id !== studentId));
+        alert("Student deleted successfully");
+        router.push(`/admin/class`);
+      }
+    } catch (error) {
+      console.error("Error deleting student:", error);
+    }
+  };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -42,7 +59,7 @@ export default function ClassViewPage() {
       </h1>
 
       {/* STUDENTS */}
-      <div className="bg-white p-4 rounded shadow mb-6">
+      <div className="bg-white px-5 rounded shadow mb-6">
         <h2 className="text-xl font-semibold mb-4">Students</h2>
 
         <table className="w-full">
@@ -53,14 +70,14 @@ export default function ClassViewPage() {
               <th className="text-left">Action</th>
             </tr>
           </thead>
-          {/* <tbody>
-            {classData.students.map((stu) => (
+          <tbody>
+            {students.map((stu) => (
               <tr key={stu._id} className="border-b">
-                <td>{stu.name}</td>
-                <td>{stu.email}</td>
+                <td>{stu?.userId?.name}</td>
+                <td>{stu?.userId?.email}</td>
                 <td>
                   <button
-                    onClick={() => deleteStudent(stu._id)}
+                    onClick={() => deleteStudent(stu.userId?._id)}
                     className="text-red-600"
                   >
                     Delete
@@ -68,7 +85,7 @@ export default function ClassViewPage() {
                 </td>
               </tr>
             ))}
-          </tbody> */}
+          </tbody>
         </table>
       </div>
 
