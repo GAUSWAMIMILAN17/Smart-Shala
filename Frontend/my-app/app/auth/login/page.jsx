@@ -35,8 +35,11 @@ export default function LoginPage() {
       // console.log(res.data.userData);
       if (res.data.success) {
         alert("Login successful!");
+        // console.log(res.data.userData)
         dispatch(setUser(res.data.userData)); // Update Redux state with user data
-        router.push("/admin");
+        if(res.data.userData.role == "TEACHER") router.push("/teacher");
+        else if (res.data.userData.role == "STUDENT") router.push("/student");
+        else router.push("/admin");
       }
 
     } catch (error) {

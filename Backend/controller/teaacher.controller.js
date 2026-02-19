@@ -207,7 +207,7 @@ export const teacherDashboard = async (req, res) => {
     const subject = await Subject.findOne({ teacher: id }).populate(
       "classroom",
     );
-    console.log(subject);
+    // console.log(subject);
     if (!id) {
       return res.status(404).json({
         success: false,

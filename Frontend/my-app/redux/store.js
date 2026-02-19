@@ -3,6 +3,7 @@ import authSlice from "./slices/authSlice";
 import adminSlice from "./slices/adminSlice";
 import { persistReducer, persistStore } from "redux-persist";
 import localStorage from "redux-persist/lib/storage";
+import teacherSlice from "./slices/teacherSlice"
 
 const persistConfig = {
   key: "root",
@@ -13,6 +14,7 @@ const persistConfig = {
 const rooReducer = combineReducers({
   auth: authSlice,
   admin: adminSlice,
+  teacher: teacherSlice
 });
 
 const persistedReducer = persistReducer(persistConfig, rooReducer);
