@@ -15,6 +15,9 @@ import {
   deleteClass,
   deleteStudent,
   classStudents,
+  allTeachers,
+  allStudents,
+  allClasses,
 } from "../controller/admin.controller.js";
 import { authentication } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
@@ -105,5 +108,11 @@ router.post(
 );
 
 router.get("/admin/class/:classId/students", authentication, authorize("ADMIN"), classStudents);
+
+router.get("/admin/all-teachers", authentication, authorize("ADMIN"), allTeachers);
+
+router.get("/admin/all-students", authentication, authorize("ADMIN"), allStudents);
+
+router.get("/admin/all-classes", authentication, authorize("ADMIN"), allClasses);
 
 export default router;

@@ -8,7 +8,7 @@ import teacherSlice from "./slices/teacherSlice"
 const persistConfig = {
   key: "root",
   storage: localStorage, // Use localStorage for persistence
-  whitelist: ["auth", "admin"], // Only persist the auth and admin slices
+  whitelist: ["auth"], // Only persist the auth 
 };
 
 const rooReducer = combineReducers({

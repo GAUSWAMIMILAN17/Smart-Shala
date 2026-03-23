@@ -120,7 +120,7 @@ export const login = async (req, res) => {
       .cookie("token", token, {
         httpOnly: true, // JS thi access nai thai
         secure: false, // production ma true (HTTPS)
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: 24 * 60 * 60 * 1000, // 1 day
       })
       .json({
@@ -477,12 +477,15 @@ export const bulkRegisterStudent = async (req, res) => {
       successRecords.push(email);
     }
 
+    const students = await User.find({ role: "STUDENT" }).select("name email");
+
     return res.status(201).json({
       success: true,
       message: "Bulk student registration done",
       successCount: successRecords.length,
       failedCount: failedRecords.length,
       failedRecords,
+      students
     });
   } catch (error) {
     console.log(error);
@@ -541,12 +544,15 @@ export const bulkRegisterTeacher = async (req, res) => {
       successRecords.push(email);
     }
 
+    const teachers = await User.find({ role: "TEACHER" }).select("name email");
+
     res.status(201).json({
       success: true,
       message: "Bulk teacher registration done",
       successCount: successRecords.length,
       failedCount: failedRecords.length,
       failedRecords,
+      teachers
     });
   } catch (error) {
     console.log(error);
@@ -568,9 +574,12 @@ export const deleteTeacher = async (req, res) => {
       });
     } 
     await User.findByIdAndDelete(teacherId);
+    const teachers = await User.find({ role: "TEACHER" }).select("name email");
+    // console.log(teachers);
     return res.status(200).json({
       success: true,
       message: "Teacher deleted successfully",
+      teachers,
     });
   } catch (error) {
     console.log(error);
@@ -592,9 +601,11 @@ export const deleteClass = async (req, res) => {
       });
     }
     await Classroom.findByIdAndDelete(id);
+    const classes = await Classroom.find();
     return res.status(200).json({
       success: true,
       message: "Classroom deleted successfully",
+      classes,
     });
   } catch (error) {
     console.log(error);
@@ -620,9 +631,11 @@ export const deleteStudent = async (req, res) => {
       await StudentProfile.findByIdAndDelete(studentProfile._id);
     }
     await User.findByIdAndDelete(studentId);
+    const students = await User.find({ role: "STUDENT" }).select("name email");
     return res.status(200).json({
       success: true,
       message: "Student deleted successfully",
+      students,
     });
   } catch (error) {
     console.log(error);
@@ -636,6 +649,7 @@ export const deleteStudent = async (req, res) => {
 export const classStudents = async (req, res) => {
   try {
     const { classId } = req.params;
+    console.log("🔥 STUDENT ROUTE HIT");
     // console.log(classId)
     const allStudents = await StudentProfile.find();
 // console.log("All Students:", allStudents);
@@ -661,4 +675,55 @@ export const classStudents = async (req, res) => {
       message: "Server Error",
     });
   } 
+}
+
+export const allTeachers = async (req, res) => {
+  try {
+    const teachers = await User.find({ role: "TEACHER" });
+    return res.status(200).json({
+      success: true,
+      message: "Teachers fetched successfully",
+      teachers,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+}
+
+export const allStudents = async (req, res) => {
+  try {
+    const students = await User.find({ role: "STUDENT" }).select("name email");
+    return res.status(200).json({
+      success: true,
+      message: "Students fetched successfully",
+      students,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+}
+
+export const allClasses = async (req, res) => {
+  try {
+    const classes = await Classroom.find();
+    return res.status(200).json({
+      success: true,
+      message: "Classes fetched successfully",
+      classes,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
 }

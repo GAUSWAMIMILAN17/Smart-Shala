@@ -16,8 +16,10 @@ const app = express();
 connectDB();
 
 const corsOptions = {
-  origin: "http://localhost:3000", // Replace with your frontend URL
-  credentials: true, // Allow cookies to be sent
+  origin: [
+    "http://localhost:3000",
+  ],
+  credentials: true
 };
 
 // middleware

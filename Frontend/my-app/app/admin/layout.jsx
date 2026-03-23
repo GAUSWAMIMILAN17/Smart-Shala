@@ -8,7 +8,7 @@ const AdminLayout = ({ children }) => {
         <Navbar />
       </header>
 
-      <main>{children}</main>
+      <main className="flex-1 overflow-y-auto mt-15">{children}</main>
 
       <footer>
         <Footer />

@@ -5,7 +5,8 @@ const teacherSlice = createSlice({
     initialState: {
         dashboard: null,
         submissions: [],
-        tests: []
+        tests: [],
+        allTeachers: []
     },
     reducers: {
         setDashboard(state, action) {
@@ -16,9 +17,12 @@ const teacherSlice = createSlice({
         },
         setTests(state,action) {
             state.tests = action.payload
+        },
+        setAllTeachers(state,action) {
+            state.allTeachers = action.payload
         }
     }
 })
 
-export const {setDashboard,setSubmission,setTests} = teacherSlice.actions
+export const {setDashboard,setSubmission,setTests,setAllTeachers} = teacherSlice.actions
 export default teacherSlice.reducer
