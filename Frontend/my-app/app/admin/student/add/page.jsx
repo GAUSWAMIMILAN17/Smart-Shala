@@ -4,10 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
+import { useSelector } from "react-redux";
 import { USER_API_ENDPOINT } from "../../../../utils/data.js";
 
 export default function AddStudentPage() {
   const router = useRouter();
+  const { dashboardData } = useSelector((state) => state.admin);
+  const classes = dashboardData?.classList || [];
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -162,26 +165,36 @@ export default function AddStudentPage() {
 
                 {/* ── Classroom + Roll No (side by side) ── */}
                 <div className="fade-up-4 grid grid-cols-2 gap-4">
-                  {/* Classroom ID */}
+                  {/* Classroom Dropdown */}
                   <div>
                     <label className="block text-xs font-semibold tracking-[.1em] uppercase text-slate-400 mb-2">
-                      Classroom ID
+                      Class
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                       </span>
-                      <input
-                        type="text"
+                      <select
                         name="classroomId"
-                        placeholder="10A, 12B…"
                         value={formData.classroomId}
                         onChange={handleChange}
                         required
-                        className="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-300 bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
-                      />
+                        className="w-full pl-10 pr-7 py-3 border border-slate-200 rounded-xl text-sm text-slate-700 bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all appearance-none"
+                      >
+                        <option value="">Select…</option>
+                        {classes.map((cls) => (
+                          <option key={cls._id} value={cls._id}>
+                            {cls.name}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </span>
                     </div>
                   </div>
 
@@ -247,7 +260,9 @@ export default function AddStudentPage() {
                     <div className="text-sm leading-snug">
                       <span className="font-semibold">{formData.name}</span>
                       {formData.classroomId && (
-                        <span className="opacity-70"> · Class <span className="font-semibold">{formData.classroomId}</span></span>
+                        <span className="opacity-70"> · Class <span className="font-semibold">
+                          {classes.find(c => c._id === formData.classroomId)?.name || formData.classroomId}
+                        </span></span>
                       )}
                       {formData.rollNo && (
                         <span className="opacity-70"> · Roll <span className="font-semibold">#{formData.rollNo}</span></span>

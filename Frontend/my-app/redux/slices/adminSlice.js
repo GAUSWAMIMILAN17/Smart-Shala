@@ -14,6 +14,7 @@ const adminSlice = createSlice({
     teacherList: [],
     studentList: [],
     classList: [],
+    classSubjects: [],
   },
 
   reducers: {
@@ -29,10 +30,13 @@ const adminSlice = createSlice({
     setClassList: (state, action) => {
       state.classList = action.payload;
     },
+    setClassSubjects: (state, action) => {
+      state.classSubjects = action.payload;
+    }
   },
 });
 
-export const { setDashboardData, setTeacherList, setStudentList, setClassList } = adminSlice.actions;
+export const { setDashboardData, setTeacherList, setStudentList, setClassList, setClassSubjects } = adminSlice.actions;
 
 export default adminSlice.reducer;
 

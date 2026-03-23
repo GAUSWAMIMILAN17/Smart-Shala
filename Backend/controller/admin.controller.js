@@ -103,7 +103,7 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "1d",
-      }
+      },
     );
     // console.log(token)
 
@@ -206,7 +206,10 @@ export const adminAddSubject = async (req, res) => {
       });
     }
 
-    const existSubject = await Subject.findOne({ name });
+    const existSubject = await Subject.findOne({
+      name,
+      classroom: classroomId, // ✅ add this
+    });
 
     if (existSubject) {
       return res.status(404).json({
@@ -364,7 +367,7 @@ export const registerStudent = async (req, res) => {
       },
       studentProfile: {
         rollNo,
-        classroomId
+        classroomId,
       },
       message: "Student Created",
     });
@@ -406,7 +409,7 @@ export const adminDashboard = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Dashboard Data Fetched",
-      dashboardData
+      dashboardData,
     });
   } catch (error) {
     console.log(error);
@@ -485,7 +488,7 @@ export const bulkRegisterStudent = async (req, res) => {
       successCount: successRecords.length,
       failedCount: failedRecords.length,
       failedRecords,
-      students
+      students,
     });
   } catch (error) {
     console.log(error);
@@ -552,7 +555,7 @@ export const bulkRegisterTeacher = async (req, res) => {
       successCount: successRecords.length,
       failedCount: failedRecords.length,
       failedRecords,
-      teachers
+      teachers,
     });
   } catch (error) {
     console.log(error);
@@ -572,7 +575,7 @@ export const deleteTeacher = async (req, res) => {
         success: false,
         message: "Teacher not found",
       });
-    } 
+    }
     await User.findByIdAndDelete(teacherId);
     const teachers = await User.find({ role: "TEACHER" }).select("name email");
     // console.log(teachers);
@@ -592,7 +595,7 @@ export const deleteTeacher = async (req, res) => {
 
 export const deleteClass = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const classroom = await Classroom.findById(id);
     if (!classroom) {
       return res.status(404).json({
@@ -616,7 +619,7 @@ export const deleteClass = async (req, res) => {
   }
 };
 
-export const deleteStudent = async (req, res) => { 
+export const deleteStudent = async (req, res) => {
   try {
     const { studentId } = req.params;
     const student = await User.findById(studentId);
@@ -644,7 +647,7 @@ export const deleteStudent = async (req, res) => {
       message: "Server Error",
     });
   }
-}
+};
 
 export const classStudents = async (req, res) => {
   try {
@@ -652,30 +655,32 @@ export const classStudents = async (req, res) => {
     console.log("🔥 STUDENT ROUTE HIT");
     // console.log(classId)
     const allStudents = await StudentProfile.find();
-// console.log("All Students:", allStudents);
+    // console.log("All Students:", allStudents);
 
-    const students = await StudentProfile.find({ classroomId: classId }).populate("userId", "name email");
+    const students = await StudentProfile.find({
+      classroomId: classId,
+    }).populate("userId", "name email");
     console.log(students);
-    if(!students) {
+    if (!students) {
       return res.status(404).json({
         success: false,
         message: "No students found for this class",
       });
     }
-    
+
     return res.status(200).json({
       success: true,
       message: "Students fetched successfully",
       students,
     });
-  } catch (error) { 
+  } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
       message: "Server Error",
     });
-  } 
-}
+  }
+};
 
 export const allTeachers = async (req, res) => {
   try {
@@ -692,7 +697,7 @@ export const allTeachers = async (req, res) => {
       message: "Server Error",
     });
   }
-}
+};
 
 export const allStudents = async (req, res) => {
   try {
@@ -709,7 +714,7 @@ export const allStudents = async (req, res) => {
       message: "Server Error",
     });
   }
-}
+};
 
 export const allClasses = async (req, res) => {
   try {
@@ -726,4 +731,26 @@ export const allClasses = async (req, res) => {
       message: "Server Error",
     });
   }
-}
+};
+
+export const classSubjects = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const subjects = await Subject.find({ classroom: classId }).populate(
+      "teacher",
+      "name email",
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Subjects fetched successfully",
+      subjects,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};

@@ -18,6 +18,7 @@ import {
   allTeachers,
   allStudents,
   allClasses,
+  classSubjects,
 } from "../controller/admin.controller.js";
 import { authentication } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
@@ -114,5 +115,7 @@ router.get("/admin/all-teachers", authentication, authorize("ADMIN"), allTeacher
 router.get("/admin/all-students", authentication, authorize("ADMIN"), allStudents);
 
 router.get("/admin/all-classes", authentication, authorize("ADMIN"), allClasses);
+
+router.get("/admin/class/:classId/subjects", authentication, authorize("ADMIN"), classSubjects)
 
 export default router;
